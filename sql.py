@@ -1,4 +1,5 @@
 import random
+import time
 import mysql.connector
 from datetime import timedelta, datetime
 
@@ -32,27 +33,39 @@ class my_sql():
         self.cursor.executemany(sql, val)
         
     def create_tankstellen_table(self):
-        self.cursor.execute("CREATE TABLE Tankstelle (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(255), Addresse VARCHAR(255))")
+        try:
+            self.cursor.execute("CREATE TABLE Tankstelle (Id INT AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(255), Addresse VARCHAR(255))")
+        except:
+            pass
 
     def alter_dienstwagen_table(self):
-        sql = "ALTER TABLE Dienstwagen ADD Kilometerstand DECIMAL(7,2);"
-        self.cursor.execute(sql)
+        try:
+            sql = "ALTER TABLE Dienstwagen ADD Kilometerstand DECIMAL(7,2);"
+            self.cursor.execute(sql)
+        except:
+            pass
 
     def create_tankvorgaenge_table(self):
-        sql = """
-            CREATE TABLE Tankvorgaenge (
-            ID INT AUTO_INCREMENT PRIMARY KEY,
-            TankstellenId INT,
-            Tankmenge DECIMAL(4,2), 
-            DienstwagenId INT,
-            Kilometerstand DECIMAL(7,2),
-            Tankkosten DECIMAL(16,2),
-            Datum DATE,
-            CONSTRAINT `TV_TS` FOREIGN KEY (`TankstellenId`) REFERENCES `Tankstelle` (`ID`),
-            CONSTRAINT `TV_DW` FOREIGN KEY (`DienstwagenId`) REFERENCES `Dienstwagen` (`ID`)
-            );
-        """
-        self.cursor.execute(sql)
+        try:
+            sql = """
+                CREATE TABLE Tankvorgaenge (
+                ID INT AUTO_INCREMENT PRIMARY KEY,
+                TankstellenId INT,
+                Tankmenge DECIMAL(4,2), 
+                DienstwagenId INT,
+                Kilometerstand DECIMAL(7,2),
+                Tankkosten DECIMAL(16,2),
+                Datum DATE,
+                CONSTRAINT `TV_TS` FOREIGN KEY (`TankstellenId`) REFERENCES `Tankstelle` (`ID`),
+                CONSTRAINT `TV_DW` FOREIGN KEY (`DienstwagenId`) REFERENCES `Dienstwagen` (`ID`)
+                );
+            """
+            self.cursor.execute(sql)
+
+        except Exception as e:
+            print(e)
+            pass
+
 
     def insert_tankvorgaenge_values(self):
         query = "INSERT INTO Tankvorgaenge (TankstellenId, Tankmenge, DienstwagenId, Kilometerstand, Tankkosten, Datum) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -70,7 +83,6 @@ class my_sql():
             kilometerstand = self.update_kilometerstand(dienstwagen_id, round_kilometer)
 
             tankkosten = 1.5 * tankmenge
-
 
             month = (i % 12) + 1
             d1 = datetime.strptime("1.{}.2020".format(month), dateformat)
